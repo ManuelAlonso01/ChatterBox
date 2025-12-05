@@ -1,15 +1,14 @@
 import socket
 import threading
 
-IP = "192.168.1.55"
-PUERTO = 8000
+IP = "192.168.1.62"
+PUERTO = 5000
 
 def recibir_mensajes(client, username):
     while True:
         try:
             header = client.recv(1024).decode()
             if header.startswith("IMG:"):
-                client.send("OK".encode())
                 tamaño = int(header.split(":", 1)[1])
                 data = recibir_bytes(client, tamaño)
                 guardar_img(data)
@@ -41,7 +40,6 @@ def enviar_imagen(client, ruta):
         data = f.read()
     header = f"IMG:{len(data)}"
     client.send(header.encode())
-    client.recv(4)
     client.sendall(data)
     print("Imagen enviada")
     
