@@ -1,7 +1,7 @@
 import socket
 import threading
 
-IP = "192.168.x.x"
+IP = "192.168.x.xx"
 PUERTO = 5000
 
 class Cliente:
