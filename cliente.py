@@ -3,7 +3,7 @@ import threading
 import platform
 import os
 
-IP = "192.168.1.55"
+IP = "192.168.x.xx"
 PUERTO = 5000
 
 def abrir_imagen_segun_so(ruta):
@@ -84,3 +84,4 @@ recibir = threading.Thread(target=recibir_mensajes, args=(client, username))
 enviar.start()
 recibir.start()
     
+
