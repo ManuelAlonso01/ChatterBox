@@ -1,18 +1,31 @@
 import socket
 import threading
+import platform
+import os
 
-IP = "192.168.1.62"
+IP = "192.168.1.55"
 PUERTO = 5000
+
+def abrir_imagen_segun_so(ruta):
+    sistema = platform.system()
+    if sistema == "Windows":
+        os.system(f"start {ruta}")
+    elif sistema == "Linux":
+        os.system(f"xdg-open {ruta}")
+    else: # Mac
+        os.system(f"open {ruta}")
 
 def recibir_mensajes(client, username):
     while True:
         try:
-            header = client.recv(1024).decode()
+            header_raw = client.recv(1024)
+            header = header_raw.decode().strip()
             if header.startswith("IMG:"):
                 tamaño = int(header.split(":", 1)[1])
                 data = recibir_bytes(client, tamaño)
                 guardar_img(data)
                 print("Llego una imagen")
+                abrir_imagen_segun_so("imagen_recibida.jpg")
                 continue
             autor, texto = header.split(":", 1)
             if autor == username:
@@ -31,15 +44,16 @@ def enviar_mensajes(client):
             ruta = mensaje.split(" ", 1)[1]
             enviar_imagen(client, ruta)
         else:
-            client.send(mensaje.encode())
+            header = mensaje.encode().ljust(1024, b" ")
+            client.sendall(header)
 
 
     
 def enviar_imagen(client, ruta):
     with open(ruta, "rb") as f:
         data = f.read()
-    header = f"IMG:{len(data)}"
-    client.send(header.encode())
+    header = f"IMG:{len(data)}".encode().ljust(1024, b" ")
+    client.sendall(header)
     client.sendall(data)
     print("Imagen enviada")
     
