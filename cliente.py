@@ -2,6 +2,7 @@ import socket
 import threading
 import platform
 import os
+from pantalla_carga import animacion
 
 IP = "IP del SERVIDOR"
 PUERTO = 5000
@@ -76,6 +77,7 @@ def guardar_archivo(data, tipo):
     return nombre
     
 
+animacion()
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect((IP, PUERTO))
 print("Conectado al servidor")
@@ -89,3 +91,4 @@ recibir = threading.Thread(target=recibir_mensajes, args=(client, username))
 enviar.start()
 recibir.start()
     
+
