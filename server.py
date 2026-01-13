@@ -1,7 +1,7 @@
 import socket
 import threading
 
-IP = "192.168.x.xx"
+IP = "0.0.0.0"
 PUERTO = 5000
 
 class Cliente:
@@ -24,48 +24,29 @@ def recibir_bytes(sock, tamaño):
 
 def manejar_cliente(c):
     print(f"[+] Cliente conectado: {c.username} desde {c.addr}")
-
     try:
         while True:
-            # El header tiene la siguiente forma: username:mensaje o en caso de una recibir
-            # una imagen IMG:ruta
             header_raw = c.sock.recv(1024)
+            if not header_raw: break
             header = header_raw.decode().strip()
-            # Revisamos que no este vacio
-            if not header:
-                break
 
-            # Si es una imagen calculamos el tamaño
-            if header.startswith("IMG:"):
-                tamaño = int(header.split(":", 1)[1])
-
-
-                # Recibimos la imagen completa
+            # Comprobar si es un archivo (buscando el ":")
+            if ":" in header and header.split(":")[0] in ["IMG", "AUDIO", "VIDEO"]:
+                tipo, tamaño = header.split(":")
+                tamaño = int(tamaño)
                 data = recibir_bytes(c.sock, tamaño)
 
-                print(f"[IMG] Imagen recibida de {c.username}, reenviando...")
-
-                # Reenviamos a todos menos al emisor
                 for cli in clientes:
                     if cli != c:
-                        # Primero avisamos que lo que mandamos es una imagen
-                        cli.sock.send(f"IMG:{tamaño}".encode().ljust(1024, b" "))
-                        # Luego procedemos a mandarla
+                        cli.sock.sendall(header_raw) # Reenviamos el header exacto
                         cli.sock.sendall(data)
-
                 continue
 
             # Texto normal
-            mensaje = f"{c.username}:{header}"
-            print(mensaje)
-
-            # Enviamos el mensaje a todos los clientes menos al emisor
-            for cliente in clientes:
-                if cliente != c:
-                    cliente.sock.send(mensaje.encode())
-                    
-    # Si hay un error con algun cliente lo printeamos
-    # y con finally lo desconectamos
+            for cli in clientes:
+                if cli != c:
+                    mensaje = f"{c.username}:{header}"
+                    cli.sock.send(mensaje.encode().ljust(1024, b" "))
     except Exception as e:
         print(f"Error con {c.username}: {e}")
 
