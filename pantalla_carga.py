@@ -40,4 +40,3 @@ def animacion():
     time.sleep(2)
     clean_screen()
     
-animacion()
